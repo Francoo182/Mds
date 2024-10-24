@@ -6,10 +6,10 @@ import logging
 logging.basicConfig(level=logging.DEBUG, filename="debug.log", filemode="w", format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Establecer el PYTHONPATH para que 'uvicorn' reconozca el paquete 'backend'
-os.environ["PYTHONPATH"] = "F:\\repos\\PythonPaginaUTN\\BackendProyecto\\backend"
+os.environ["PYTHONPATH"] = "F:\\repos\\PythonPaginaUTN\\BackendProyecto\\MDS\\backend"
 
 # Ruta del intérprete de Python dentro del entorno virtual
-python_path = "F:\\repos\\PythonPaginaUTN\\BackendProyecto\\env\\Scripts\\python.exe"
+python_path = "F:\\repos\\PythonPaginaUTN\\BackendProyecto\\MDS\\env\\Scripts\\python.exe"
 
 # Ejecutar la API (con el PYTHONPATH configurado)
 api_process = subprocess.Popen([python_path, "-m", "uvicorn", "main:app", "--reload"])
@@ -18,7 +18,7 @@ api_process = subprocess.Popen([python_path, "-m", "uvicorn", "main:app", "--rel
 time.sleep(2)
 
 # Ejecutar la aplicación Tkinter (asegúrate de que la ruta es correcta)
-tkinter_process = subprocess.Popen([python_path, "F:\\repos\\PythonPaginaUTN\\BackendProyecto\\front\\login.py"])
+tkinter_process = subprocess.Popen([python_path, "F:\\repos\\PythonPaginaUTN\\BackendProyecto\\MDS\\front\\login.py"])
 
 # Esperar que ambos procesos terminen
 try:
