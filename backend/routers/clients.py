@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from crud import *
 from models import *
 import uvicorn
@@ -29,3 +29,9 @@ class Requests:
     @router.get("/clients/email/{email}")
     def clienteXMail(email:str):
         return get_cliente_by_email(email)
+    @router.get("/clienteID/{email}", response_model=int)
+    def clienteID(email: str):
+        cliente_id = get_clienteid_by_email(email)
+        if cliente_id is None:
+            raise HTTPException(status_code=404, detail="Cliente no encontrado")
+        return cliente_id

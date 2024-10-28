@@ -24,4 +24,4 @@ templates = Jinja2Templates(directory="web")
 @app.get("/")
 async def read_index(request: Request):
     # Puedes pasar datos dinámicos al template
-    return templates.TemplateResponse("index.html", {"request": request, "message": "Bienvenido a Spa Sentirse Bien"})
+    return templates.TemplateResponse("index3.html", {"request": request, "message": "Bienvenido a Spa Sentirse Bien"})

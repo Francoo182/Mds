@@ -1,9 +1,11 @@
+import datetime
 import tkinter as tk
 from tkinter import Canvas, messagebox
 from tkinter import ttk
 from PIL import ImageTk, Image
 import requests
 from frontend_utils import load_image
+
 
 class SecretariaPage:
     def __init__(self, root):
@@ -62,11 +64,29 @@ class SecretariaPage:
                                                           command=self.administrar_profesionales)
         self.btn_listado_clientes_profesional.place(x=10, y=300, width=330, height=40)
 
-        # Botón para "Atras"
-        self.btn_listado_clientes_profesional = tk.Button(self.side_menu, text="Atras", font=("Arial", 16), 
+         # Crear botón para "Ver Citas del Día"
+        self.btn_ver_citas_dia = tk.Button(self.side_menu, text="Ver Citas del Día", font=("Arial", 16), 
+                                        bg="pink", fg="black", bd=0, cursor="hand2", 
+                                        command=self.ver_citas_dia)
+        self.btn_ver_citas_dia.place(x=8, y=360, width=170, height=40)
+
+        # Crear botón para "Generar Pago"
+        self.btn_generar_pago = tk.Button(self.side_menu, text="Generar Pago", font=("Arial", 16), 
+                                        bg="pink", fg="black", bd=0, cursor="hand2", 
+                                        command=self.generar_pago)
+        self.btn_generar_pago.place(x=10, y=420, width=130, height=40)
+        # Crear botón para "Reserva"
+        self.btn_generar_pago = tk.Button(self.side_menu, text="Crear Reserva", font=("Arial", 16), 
+                                        bg="pink", fg="black", bd=0, cursor="hand2", 
+                                        command=self.crear_reserva)
+        self.btn_generar_pago.place(x=10, y=480, width=140, height=40)
+
+        ###ATRASSSS
+
+        self.btn_atras = tk.Button(self.side_menu, text="Atras", font=("Arial", 16), 
                                                           bg="pink", fg="black", bd=0, cursor="hand2", 
                                                           command=self.atras)
-        self.btn_listado_clientes_profesional.place(x=10, y=360, width=50, height=40)
+        self.btn_atras.place(x=10, y=540, width=50, height=40)
 
         # ==================== Área principal =======================
         self.content = tk.Frame(self.root)
@@ -110,7 +130,17 @@ class SecretariaPage:
         self.content.destroy()
         self.content = tk.Frame(self.root)
         self.content.pack(side="left", fill="both", expand=False)
-        
+
+    def ver_citas_dia(self):
+        for widget in self.content.winfo_children():
+            widget.destroy()
+
+        citas_dia_label = tk.Label(self.content, text="Ver Citas del Día", font=("Arial", 20))
+        citas_dia_label.pack(pady=1)
+        encabezados = ["Cliente", "Servicio", "Trabajador", "Fecha"]
+        campos = ["cliente", "servicio", "trabajador", "fecha"]
+        url ="http://127.0.0.1:8000/reservas/dia"
+        self.mostrar_datos_api(url, encabezados, campos)    
     def mostrar_datos_api(self, url, encabezados, campos):
             # Método general para obtener datos de la API y mostrarlos en formato de tabla.
             try:
@@ -153,6 +183,96 @@ class SecretariaPage:
                     messagebox.showerror("Error", f"Error al obtener datos de la API: {response.status_code}")
             except Exception as e:
                 messagebox.showerror("Error", f"Hubo un problema al conectar con la API: {e}")
+
+    def crear_reserva(self):
+        for widget in self.content.winfo_children():
+            widget.destroy()
+
+        # Título de la sección
+        reserva_label = tk.Label(self.content, text="Crear Reserva", font=("Arial", 20))
+        reserva_label.pack(pady=20)
+
+        # Campo de texto para Cliente ID
+        cliente_id_label = tk.Label(self.content, text="ID del Cliente")
+        cliente_id_label.pack(pady=(10, 0))
+        cliente_id_entry = tk.Entry(self.content)
+        cliente_id_entry.pack()
+
+        # Campo de texto para Servicio ID
+        servicio_id_label = tk.Label(self.content, text="ID del Servicio")
+        servicio_id_label.pack(pady=(10, 0))
+        servicio_id_entry = tk.Entry(self.content)
+        servicio_id_entry.pack()
+
+        # Campo de texto para Fecha (YYYY-MM-DD HH:MM)
+        fecha_label = tk.Label(self.content, text="Fecha (YYYY-MM-DD HH:MM)")
+        fecha_label.pack(pady=(10, 0))
+        fecha_entry = tk.Entry(self.content)
+        fecha_entry.pack()
+
+        # Campo de texto para Trabajador ID
+        trabajador_id_label = tk.Label(self.content, text="ID del Trabajador")
+        trabajador_id_label.pack(pady=(10, 0))
+        trabajador_id_entry = tk.Entry(self.content)
+        trabajador_id_entry.pack()
+
+        url = "http://127.0.0.1:8000/reservas"
+
+        # Botón para enviar los datos
+        submit_button = tk.Button(
+            self.content, 
+            text="Registrar Reserva", 
+            command=lambda: self.cargar_datos_api2(
+                url, 
+                cliente_id_entry.get(), 
+                servicio_id_entry.get(), 
+                fecha_entry.get(), 
+                trabajador_id_entry.get()
+            )
+        )
+        submit_button.pack(pady=20)
+    def cargar_datos_api2(self, url, cliente_id, servicio_id, fecha, trabajador_id):
+        try:
+            # Convertir cliente_id, servicio_id, y trabajador_id a enteros
+            cliente_id = int(cliente_id)
+            servicio_id = int(servicio_id)
+            trabajador_id = int(trabajador_id)
+
+            # Convertir la fecha a formato datetime
+            fecha =  datetime.datetime.strptime(fecha, "%Y-%m-%d %H:%M")
+
+            # Crear el cuerpo de la solicitud con los datos de la reserva
+            payload = {
+                "cliente_id": cliente_id,
+                "servicio_id": servicio_id,
+                "fecha": fecha.isoformat(),  # Convertir a formato ISO 8601
+                "trabajador_id": trabajador_id
+            }
+
+            # Realizar la solicitud POST a la API
+            response = requests.post(url, json=payload)
+
+            # Comprobar si la solicitud fue exitosa
+            if response.status_code == 200:
+                messagebox.showinfo("Éxito", "Reserva creada correctamente.")
+            else:
+                messagebox.showerror("Error", f"Error al crear reserva: {response.status_code} - {response.json().get('detail', 'No especificado')}")
+        except ValueError as e:
+            messagebox.showerror("Error de tipo de datos", f"Por favor verifica los valores ingresados. Error: {e}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Hubo un problema al conectar con la API: {e}")
+    def obtener_cliente_id(self, email):
+        url = f"http://127.0.0.1:8000/clienteID/{email}"
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            try:
+                # Convertir el contenido de la respuesta a un entero
+                cliente_id = int(response.text.strip())
+                return cliente_id
+            except ValueError:
+                print("Error: La respuesta de la API no es un número entero válido.")
+                return None
 
     def crear_empleado(self):
         for widget in self.content.winfo_children():
@@ -344,7 +464,223 @@ class SecretariaPage:
         self.content.destroy()
         self.content = tk.Frame(self.root)
         self.content.pack(side="left", fill="both", expand=False)
+    
+    def generar_pago(self):
+        # Limpiar el contenido anterior
+        for widget in self.content.winfo_children():
+            widget.destroy()
 
+        # Título del formulario
+        pago_label = tk.Label(self.content, text="Generar Pago", font=("Arial", 20))
+        pago_label.grid(row=0, column=0, columnspan=4, pady=10)
+
+        # Información del Cliente
+        cliente_label = tk.Label(self.content, text="Información del Cliente", font=("Arial", 16))
+        cliente_label.grid(row=1, column=0, columnspan=2, pady=5, sticky="w")
+        
+        # Email del Cliente
+        email_label = tk.Label(self.content, text="Email:")
+        email_label.grid(row=3, column=0, padx=5, pady=5)
+        self.email_entry = tk.Entry(self.content)
+        self.email_entry.grid(row=4, column=0, padx=5, pady=5)
+        
+        # Botón para buscar el cliente
+        submit_button = tk.Button(self.content, text="Buscar Cliente", command=self.buscar_cliente)
+        submit_button.grid(row=10, column=0, columnspan=4, pady=20)
+    def buscar_cliente(self):
+        # Obtener el email ingresado
+        self.cliente_email = self.email_entry.get()
+        cliente_id_url = f"http://127.0.0.1:8000/clients/email/{self.cliente_email}"
+        
+        # Hacer una solicitud a la API para obtener el ID del cliente
+        response = requests.get(cliente_id_url)
+        if response.status_code == 200:
+            # Guardar el ID del cliente
+            self.cliente_res = response.json()
+            self.mostrar_formulario_pago()  # Mostrar el formulario para ingresar los datos de pago
+        else:
+            print("Error: No se encontró el cliente con el email proporcionado.")
+
+    def mostrar_formulario_pago(self):
+        # Limpiar widgets anteriores
+        for widget in self.content.winfo_children():
+            widget.destroy()
+
+        # Encabezados de tabla
+        encabezados = ["Cliente", "Reserva", "Servicio", "Fecha reserva", "Monto total", "Abonado"]
+        campos = ["Cliente", "Reserva", "Servicio", "Fecha reserva", "Monto total", "Abonado"]
+
+        # Llamada a la API para mostrar encabezado y datos de la reserva
+        url = f"http://127.0.0.1:8000/clients/email/{self.cliente_email}"
+        self.mostrar_datos_api5(url, encabezados, campos)
+
+        # Información de la Reserva
+        reserva_label = tk.Label(self.content, text="Información de la Reserva", font=("Arial", 23))
+        reserva_label.grid(row=16, column=1, columnspan=3, padx=2, pady=10, sticky="w")
+
+        # Ajuste en la posición y márgenes del botón para mejor visualización
+        id_reserva_label = tk.Label(self.content, text="Ingresar ID de la Reserva:", font=("Arial",13))
+        id_reserva_label.grid(row=18, column=1, padx=2, pady=1, sticky="e")
+
+        # Campo de entrada para ID de reserva
+        self.id_reserva_entry = tk.Entry(self.content, width=20)
+        self.id_reserva_entry.grid(row=18, column=2, padx=25, pady=1, sticky="w")
+
+        # Botón ajustado para buscar la reserva
+        reserva_button = tk.Button(
+            self.content, text="Buscar Reserva", command=self.buscar_reserva,
+            font=("Arial", 12, "bold"), bg="#4CAF50", fg="white", relief="raised"
+        )
+        reserva_button.grid(row=20, column=1, padx=(10, 5), pady=5, ipadx=10, sticky="ew")
+    def buscar_reserva(self):
+        # Guardar el ID de la reserva
+        self.reserva_id = self.id_reserva_entry.get()
+        
+        # Aquí podrías agregar una validación para verificar la existencia de la reserva, si fuera necesario
+        # Para este ejemplo, asumimos que el ID de reserva es correcto y pasamos directamente a ingresar el pago
+
+        self.mostrar_formulario_datos_pago()
+
+    def mostrar_formulario_datos_pago(self):
+        # Limpiar widgets anteriores
+        for widget in self.content.winfo_children():
+            widget.destroy()
+
+        # Información del Pago
+        pago_info_label = tk.Label(self.content, text="Información del Pago:", font=("Arial", 18,"bold"))
+        pago_info_label.grid(row=1, column=0, columnspan=2, padx=5, sticky="w")
+
+        # Monto
+        monto_label = tk.Label(self.content, text="Monto:")
+        monto_label.grid(row=2, column=0, padx=5, pady=5)
+        self.monto_entry = tk.Entry(self.content)
+        self.monto_entry.grid(row=3, column=0, padx=5, pady=5)
+
+        # Método de Pago
+        metodo_pago_label = tk.Label(self.content, text="Método de Pago:")
+        metodo_pago_label.grid(row=4, column=0, padx=5, pady=5)
+
+        # Menú desplegable para Método de Pago
+        self.metodo_pago_var = tk.StringVar()
+        metodo_pago_combobox = ttk.Combobox(self.content, textvariable=self.metodo_pago_var)
+        metodo_pago_combobox['values'] = ("Efectivo", "Transferencia Bancaria", "Tarjeta de Crédito", "Tarjeta de Débito")
+        metodo_pago_combobox.grid(row=5, column=0, padx=5, pady=5)
+        funy_label = tk.Label(self.content, text="¿Tarjeta de Credito o Debito?",font=("Arial", 18, "bold"))
+        funy_label.grid(row=9, column=0, padx=5, pady=5)
+        funy_label = tk.Label(self.content, text="Numero de la tarjeta:")
+        funy_label.grid(row=10, column=0, padx=5, pady=5)
+        self.FUNY_entry = tk.Entry(self.content)
+        self.FUNY_entry.grid(row=11, column=0, padx=5, pady=5)
+        funy_label = tk.Label(self.content, text="Fecha de vencimiento:")
+        funy_label.grid(row=12, column=0, padx=5, pady=5)
+        self.FUNY_entry = tk.Entry(self.content)
+        self.FUNY_entry.grid(row=13, column=0, padx=5, pady=5)
+        funy_label = tk.Label(self.content, text="Nombre del titular:")
+        funy_label.grid(row=14, column=0, padx=5, pady=5)
+        self.FUNY_entry = tk.Entry(self.content)
+        self.FUNY_entry.grid(row=15, column=0, padx=5, pady=5)
+        funy_label = tk.Label(self.content, text="CVV:")
+        funy_label.grid(row=16, column=0, padx=5, pady=5)
+        self.FUNY_entry = tk.Entry(self.content)
+        self.FUNY_entry.grid(row=17, column=0, padx=5, pady=5)
+        # Botón para guardar el pago
+        guardar_button = tk.Button(self.content, text="Guardar Pago", command=self.guardar_pago)
+        guardar_button.grid(row=6, column=0, columnspan=2, pady=20)
+
+    def guardar_pago(self):
+        # Validar y obtener los datos de pago
+        cliente_id = self.obtener_cliente_id(self.cliente_email)
+        if cliente_id is None:
+            print("Error: No se pudo obtener el ID del cliente.")
+            return  # Detener la función si cliente_id es None
+
+        try:
+            monto = float(self.monto_entry.get())
+        except ValueError:
+            print("Error: Monto debe ser un número válido.")
+            return
+
+        metodo_pago = self.metodo_pago_var.get()
+        if metodo_pago not in ["Efectivo", "Transferencia Bancaria", "Tarjeta de Crédito", "Tarjeta de Débito"]:
+            print("Error: Método de pago no válido.")
+            return
+
+        fecha = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+        
+        # Preparar el payload para la creación del pago
+        payload = {
+            "cliente_id": cliente_id,
+            "monto": monto,
+            "metodo_pago": metodo_pago,
+            "fecha": fecha,
+            "reserva_id": self.reserva_id
+        }
+
+        url = "http://127.0.0.1:8000/crearPago"
+        response = requests.post(url, json=payload)
+        if response.status_code == 200:
+            print("Pago creado exitosamente")
+            messagebox.showinfo("Éxito", "Pago creado correctamente.")
+            self.mostrar_formulario_envio_factura()  # Redirigir a la instancia para enviar la factura
+        else:
+            print(f"Error al crear el pago: {response.json()}")
+
+    def mostrar_formulario_envio_factura(self):
+        # Limpiar widgets anteriores
+        for widget in self.content.winfo_children():
+            widget.destroy()
+
+        # Título para la sección de envío de factura
+        factura_label = tk.Label(self.content, text="Enviar Factura", font=("Arial", 16))
+        factura_label.grid(row=0, column=0, columnspan=2, padx=5, pady=10)
+
+        # Email para enviar la factura
+        email_label = tk.Label(self.content, text="Correo electrónico:")
+        email_label.grid(row=1, column=0, padx=5, pady=5)
+        self.from_email_entry = tk.Entry(self.content)
+        self.from_email_entry.grid(row=2, column=0, padx=5, pady=5)
+
+        # Contraseña para el correo
+        password_label = tk.Label(self.content, text="Contraseña del correo:")
+        password_label.grid(row=3, column=0, padx=5, pady=5)
+        self.from_password_entry = tk.Entry(self.content, show="*")
+        self.from_password_entry.grid(row=4, column=0, padx=5, pady=5)
+
+        # Botón para enviar la factura
+        enviar_button = tk.Button(self.content, text="Enviar Factura", command=self.enviar_factura)
+        enviar_button.grid(row=5, column=0, columnspan=2, pady=20)
+
+    def enviar_factura(self):
+        # Obtener las credenciales de correo del formulario
+        from_email = self.from_email_entry.get()
+        from_password = "zpva khkr dngi rtvv"
+
+        # Verificar que las credenciales no estén vacías
+        if not from_email or not from_password:
+            messagebox.showerror("Error", "Credenciales de correo no ingresadas.")
+            return
+
+        # Llamar al método para enviar la factura
+        self.enviar_factura_con_datos(self.cliente_email, self.reserva_id, from_email, from_password)
+
+    def enviar_factura_con_datos(self, cliente_id, reserva_id, from_email, from_password):
+        # Crear el payload con los datos de la factura
+        payload = {
+            "reserva_id": reserva_id,
+            "from_email": from_email,
+            "from_password": from_password
+        }
+
+        # Enviar solicitud a la API para procesar la factura
+        url = f"http://127.0.0.1:8000/enviar_factura?reserva_id={reserva_id}"
+        response = requests.post(url, json=payload)
+
+        # Manejo de la respuesta
+        if response.status_code == 200:
+            messagebox.showinfo("Éxito", "Factura generada y enviada exitosamente.")
+        else:
+            error_msg = response.json().get("detail", "Error desconocido al enviar la factura")
+            messagebox.showerror("Error", error_msg)
 # Para ejecutar la ventana de secretaria
 def mostrar_pagina_secretaria():
     root = tk.Tk()

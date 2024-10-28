@@ -542,6 +542,81 @@ def get_servicios_disponibles():
             cursor.close()
         if conn:
             conn.close()
+def get_clienteid_by_email(email: str):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        consulta = "SELECT Clientes.id FROM Clientes WHERE Clientes.email = ?"
+        cursor.execute(consulta, email)
+        resultado = cursor.fetchone()  # Usa fetchone para un solo resultado
+        if resultado:
+            cliente_id = resultado[0]  # Extrae el valor entero del ID
+            return cliente_id
+        else:
+            return None
+    except pyodbc.Error as ex:
+        print(f"Error al obtener el ID: {ex}")
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def obtener_datos_factura(reserva_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        consulta = """
+            SELECT 
+                c.nombre AS Cliente, 
+                c.email AS Email,
+                c.telefono AS Telefono, 
+                s.nombre AS Servicio, 
+                s.descripcion AS Descripcion, 
+                r.fecha AS FechaReserva, 
+                s.precio AS PrecioServicio,
+                p.monto AS TotalAbonado,
+                p.metodo_pago AS MetodoPago,
+                p.fecha AS FechaPago
+            FROM Clientes c
+            JOIN Reservas r ON r.cliente_id = c.id
+            JOIN Servicios s ON s.id = r.servicio_id
+            LEFT JOIN Pagos p ON p.reserva_id = r.id
+            WHERE r.id = ?
+        """
+        cursor.execute(consulta, (reserva_id,))
+        resultado = cursor.fetchone()
+
+        if resultado:
+            return {
+                "cliente": {
+                    "nombre": resultado.Cliente,
+                    "email": resultado.Email,
+                    "telefono": resultado.Telefono
+                },
+                "servicio": {
+                    "nombre": resultado.Servicio,
+                    "descripcion": resultado.Descripcion,
+                    "precio": resultado.PrecioServicio
+                },
+                "reserva": {
+                    "fecha": resultado.FechaReserva
+                },
+                "pago": {
+                    "monto": resultado.TotalAbonado,
+                    "metodo_pago": resultado.MetodoPago,
+                    "fecha": resultado.FechaPago
+                }
+            }
+        else:
+            return None
+    except pyodbc.Error as e:
+        print(f"Error al obtener los datos de la factura: {e}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
 
 #Obtener ingresos dependiendo el tipo de pago
 def get_ingresos_por_tipo_de_pago(fecha_inicio: str, fecha_fin: str):

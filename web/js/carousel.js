@@ -1,50 +1,104 @@
-// carousel.js
+document.addEventListener('DOMContentLoaded', () => {
+    const carousels = [
+        { id: 'carousel-masajes' },
+        { id: 'carousel-belleza' },
+        { id: 'carousel-faciales' },
+        { id: 'carousel-corporales' },
+    ];
 
-let currentSlide = 0;
-const slides = document.querySelectorAll('.slide');
-const totalSlides = slides.length;
-const prev = document.querySelector('.prev');
-const next = document.querySelector('.next');
+    carousels.forEach(({ id }) => {
+        const carousel = document.getElementById(id);
+        const slides = carousel.querySelectorAll('.slide');
+        let currentSlide = 0;
 
-// Mostrar la diapositiva actual
-function showSlide(slideIndex) {
-    slides.forEach((slide, index) => {
-        slide.classList.remove('active');
-        if (index === slideIndex) {
-            slide.classList.add('active');
-        }
+        const showSlide = (index) => {
+            slides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+            });
+        };
+
+        const nextSlide = () => {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        };
+
+        const prevSlide = () => {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            showSlide(currentSlide);
+        };
+
+        // Inicializa el primer slide como activo
+        showSlide(currentSlide);
+
+        // Agrega eventos de clic a los botones de navegación específicos de cada carrusel
+        carousel.querySelector('.next').addEventListener('click', nextSlide);
+        carousel.querySelector('.prev').addEventListener('click', prevSlide);
     });
-}
+});
+document.addEventListener('DOMContentLoaded', () => {
+    const slides = document.querySelectorAll('.carousel .slide');
+    let currentSlide = 0;
 
-// Cambiar a la siguiente diapositiva
-function nextSlide() {
-    currentSlide = (currentSlide + 1) % totalSlides;
-    showSlide(currentSlide);
-}
-
-// Cambiar a la diapositiva anterior
-function prevSlide() {
-    currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-    showSlide(currentSlide);
-}
-
-// Inicializar el carrusel solo si hay diapositivas
-if (slides.length > 0) {
-    showSlide(currentSlide); // Mostrar la primera diapositiva
-
-    // Cambiar de imagen automáticamente cada 5 segundos
-    const autoSlideInterval = setInterval(nextSlide, 5000);
-
-    // Event listeners para los botones de navegación
-    if (next && prev) {
-        next.addEventListener('click', () => {
-            clearInterval(autoSlideInterval); // Pausar auto-slide al hacer clic
-            nextSlide();
+    const showSlide = (index) => {
+        slides.forEach((slide, i) => {
+            slide.classList.toggle('active', i === index);
         });
+    };
 
-        prev.addEventListener('click', () => {
-            clearInterval(autoSlideInterval); // Pausar auto-slide al hacer clic
-            prevSlide();
-        });
-    }
-}
+    const nextSlide = () => {
+        currentSlide = (currentSlide + 1) % slides.length;
+        showSlide(currentSlide);
+    };
+
+    const prevSlide = () => {
+        currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+        showSlide(currentSlide);
+    };
+
+    // Inicializa el primer slide como activo
+    showSlide(currentSlide);
+
+    // Cambia de slide cada 5 segundos
+    setInterval(nextSlide, 5000);
+
+    // Asocia los botones de navegación a las funciones
+    document.querySelector('.carousel-controls .next').addEventListener('click', nextSlide);
+    document.querySelector('.carousel-controls .prev').addEventListener('click', prevSlide);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const carousels = document.querySelectorAll('.carousel'); // Selecciona todos los carruseles
+
+    carousels.forEach((carousel) => {
+        const slides = carousel.querySelectorAll('.slide');
+        const nextButton = carousel.querySelector('.next');
+        const prevButton = carousel.querySelector('.prev');
+        let currentSlide = 0;
+
+        const showSlide = (index) => {
+            slides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+            });
+        };
+
+        const nextSlide = () => {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        };
+
+        const prevSlide = () => {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            showSlide(currentSlide);
+        };
+
+        // Inicializa el primer slide como activo
+        showSlide(currentSlide);
+
+        // Eventos de clic para los botones de navegación
+        nextButton.addEventListener('click', nextSlide);
+        prevButton.addEventListener('click', prevSlide);
+
+        // Cambio automático de slide cada 5 segundos
+        setInterval(nextSlide, 5000);
+    });
+});

@@ -1,13 +1,10 @@
 """importaciones"""
-
-
-
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from fastapi import APIRouter, Body, HTTPException
 import crud
-from models import Cliente, EmailCredentials, Pago, Reserva, Servicio
+from models import *
 from emails_senders import *
 
 router = APIRouter()
@@ -51,39 +48,40 @@ def generar_factura_pdf(cliente, pago, reserva, servicio):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al generar el PDF: {str(e)}")
-
 @router.post("/enviar_factura")
-def enviar_factura_endpoint(
-    cliente: dict = Body(...), 
-    pago: dict = Body(...), 
-    reserva: dict = Body(...), 
-    servicio: dict = Body(...), 
-    email_credentials: dict = Body(...)
-):
+def enviar_factura_endpoint(reserva_id: int, email_credentials: dict = Body(...)):
     try:
+        # Obtener datos de la factura
+        datos_factura = crud.obtener_datos_factura(reserva_id)
+        if not datos_factura:
+            raise HTTPException(status_code=404, detail="Datos de factura no encontrados")
+
         # Generar la factura en PDF
         archivo_factura = generar_factura_pdf(
-            cliente,
-            pago,
-            reserva,
-            servicio
+            datos_factura['cliente'],
+            datos_factura['pago'],
+            datos_factura['reserva'],
+            datos_factura['servicio']
         )
 
         # Enviar la factura por email
         enviar_factura_por_email(
-            cliente['email'], 
-            archivo_factura, 
-            email_credentials['from_email'], 
+            datos_factura['cliente']['email'],
+            archivo_factura,
+            email_credentials['from_email'],
             email_credentials['from_password']
         )
 
         return {"mensaje": "Factura enviada con éxito"}
     except HTTPException as e:
-        # Error manejado con mensaje detallado
         raise e
     except Exception as e:
-        # Errores no manejados
         raise HTTPException(status_code=500, detail=f"Error inesperado: {str(e)}")
+
+@router.post("/crearPago", response_model=dict)
+def create_Pago(pago: Pago):
+    return crud.create_pago(pago)
+
 
 @router.get("/Pagos/")
 def get_pagos():

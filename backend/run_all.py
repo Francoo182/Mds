@@ -49,17 +49,17 @@ api_process = subprocess.Popen([python_path, "-m", "uvicorn", "main:app", "--rel
 time.sleep(2)
 
 # Ejecutar la aplicación Tkinter (asegúrate de que la ruta es correcta)
-tkinter_process = subprocess.Popen([python_path, "F:\\repos\\PythonPaginaUTN\\BackendProyecto\\MDS\\front\\login.py"])
+#tkinter_process = subprocess.Popen([python_path, "F:\\repos\\PythonPaginaUTN\\BackendProyecto\\MDS\\front\\login.py"])
 
 # Abrir la página web principal en el navegador por defecto
-webbrowser.open("http://localhost:8000/static/index.html")  # Cambia la URL según la ruta correcta de tu página web
+webbrowser.open("http://localhost:8000/static/cliente.html")  # Cambia la URL según la ruta correcta de tu página web
 
 # Esperar que ambos procesos terminen
 try:
     api_process.wait()  # Espera a que el proceso de la API termine
-    tkinter_process.wait()  # Espera a que el proceso de Tkinter termine
+    #tkinter_process.wait()  # Espera a que el proceso de Tkinter termine
 except KeyboardInterrupt:
     # Si se presiona Ctrl+C, terminamos ambos procesos
     api_process.terminate()
-    tkinter_process.terminate()
+    #tkinter_process.terminate()
 
