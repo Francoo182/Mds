@@ -7,17 +7,20 @@ from datetime import datetime
 #     pdf.save()
 # generar_pdf()
 #Función para generar PDF de informe de ingresos
-def generar_pdf_informe_ingresos():
+def generar_el_pdf_informe_ingresos(datos):
     nombre_archivo = f"informe_ingresos_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
     c = canvas.Canvas(nombre_archivo, pagesize=letter)
     width, height = letter
+    
     # Título
     c.setFont("Helvetica-Bold", 16)
     c.drawCentredString(width / 2.0, height - 40, "Informe de Ingresos por Tipo de Pago")
+    
     # Encabezados de tabla
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, height - 80, "Método de Pago")
     c.drawString(200, height - 80, "Total Ingresos")
+    
     # Contenido de la tabla
     c.setFont("Helvetica", 12)
     y = height - 100
@@ -27,6 +30,7 @@ def generar_pdf_informe_ingresos():
         c.drawString(50, y, metodo_pago)
         c.drawString(200, y, f"{total_ingresos}")
         y -= 20
+    
     # Guardar el PDF
     c.save()
     return nombre_archivo

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from crud import create_reserva,get_reservas_del_dia,get_reservas_by_cliente,delete_reserva,update_reserva,get_todas_las_reservas
+from crud import *
 from models import Reserva
 from fastapi.concurrency import run_in_threadpool
 
@@ -32,3 +32,10 @@ async def obtener_reservas_by_cliente(cliente_id: int):
     if "error" in reservasxCliente:
         raise HTTPException(status_code=400, detail=reservasxCliente["error"])
     return reservasxCliente
+@router.get("/reservasf/{fecha}")
+async def obtener_reservas_dela_fecha(fecha: str):
+    # Pasa la función y el argumento como parámetros de run_in_threadpool
+    reservas = await run_in_threadpool(get_reservas_por_fecha, fecha)
+    if "error" in reservas:
+        raise HTTPException(status_code=400, detail=reservas["error"])
+    return reservas

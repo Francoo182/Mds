@@ -122,20 +122,51 @@ def delete_trabajador(trabajador_id: int):
         print(f"Error inesperado: {ex}")
         return {"error": "Ocurrió un error inesperado. Contacte al soporte técnico."}
 #Ovbtener por email trabajador
-def get_trabajador_by_email(email: str):
-    query = "SELECT * FROM Trabajadores WHERE email = ?"
-    cursor = execute_query(query, (email,))
-    row = cursor.fetchone()
-    if row:
-        return {
-            "id": row[0],
-            "nombre": row[1],
-            "email": row[2],
-            "password": row[3],
-            "rol": row[4]
-        }
-    return None
-#Traer clientes por dia y servicio
+def get_cliente_by_email(email: str):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        query = """         
+            SELECT 
+            c.nombre AS Cliente, 
+            r.id AS Reserva, 
+            s.nombre AS Servicio,  
+            r.fecha AS 'Fecha reserva', 
+            s.precio AS 'Monto total',
+            COALESCE(p.monto, 0) AS Abonado
+            FROM Clientes c
+            JOIN Reservas r ON r.cliente_id = c.id
+            JOIN Servicios s ON s.id = r.servicio_id
+            LEFT JOIN Pagos p ON p.reserva_id = r.id
+            WHERE c.email = ? 
+            AND (p.monto IS NULL OR p.monto < s.precio) 
+            ORDER BY r.fecha"""
+        
+        cursor.execute(query, (email,))
+        rows = cursor.fetchall()  # Fetch all rows
+        
+        # Prepare a list to hold all rows of data
+        clientslist = []
+        for row in rows:
+            clientslist.append({
+                "Cliente": row[0],
+                "Reserva": row[1],
+                "Servicio": row[2],
+                "Fecha reserva": row[3],
+                "Monto total": row[4],
+                "Abonado": row[5]
+            })
+        
+        return clientslist  # Return the full list of dictionaries
+    except pyodbc.Error as ex:
+        print(f"Error: {ex}")
+        return {"error": "No se pudieron obtener las reservas."}
+    finally:
+        if cursor:
+            cursor.close()  # Close the cursor explicitly here
+        if conn:
+            conn.close() 
 def get_clients_xday_and_services():
     try:
         conn = get_db_connection()
@@ -293,6 +324,8 @@ def get_todas_las_reservas():
         if conn:
             conn.close()
 
+"""SELECT * FROM Reservas
+        WHERE CONVERT(date, fecha) = ?;"""
 #Traer todas las reservas del dia
 def get_reservas_del_dia():
     try:
@@ -300,21 +333,32 @@ def get_reservas_del_dia():
         cursor = conn.cursor()
         # Obtener la fecha actual en formato YYYY-MM-DD
         fecha_hoy = datetime.now().strftime('%Y-%m-%d')
-        query = """
-        SELECT * FROM Reservas
-        WHERE CONVERT(date, fecha) = ?;
-        """
+        query = """SELECT 
+                        c.nombre AS Cliente,
+                        s.nombre AS Servicio,
+                        t.nombre AS Trabajador,
+                        r.fecha
+                    FROM 
+                        Reservas r
+                    JOIN 
+                        Clientes c ON c.id = r.cliente_id
+                    JOIN 
+                        Servicios s ON s.id = r.servicio_id
+                    JOIN 
+                        Trabajadores t ON t.id = r.trabajador_id
+                    WHERE 
+                        CONVERT(date, r.fecha) = ?;
+                """
         # Ejecutar la consulta con la fecha de hoy como parámetro
         cursor.execute(query, (fecha_hoy,))
         rows = cursor.fetchall()
         reservas = []
         for row in rows:
             reservas.append({
-                "id": row[0],
-                "cliente_id": row[1],
-                "servicio_id": row[2],
-                "fecha": row[3],
-                "trabajador_id": row[4]
+                "cliente": row[0],
+                "servicio": row[1],
+                "trabajador": row[2],
+                "fecha": row[3]
             })
         return reservas  
     except pyodbc.Error as ex:
@@ -391,7 +435,51 @@ def get_trabajador_by_id(trabajador_id: int):
         print(f"Error inesperado: {ex}")
         return {"error": "Ocurrió un error inesperado. Contacte al soporte técnico."}
 
-
+from datetime import datetime
+import pyodbc
+#Traer por fecha
+def get_reservas_por_fecha(fecha:str):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Consulta SQL con el parámetro de fecha
+        query = """SELECT 
+                        c.nombre AS Cliente,
+                        s.nombre AS Servicio,
+                        t.nombre AS Trabajador,
+                        r.fecha
+                    FROM 
+                        Reservas r
+                    JOIN 
+                        Clientes c ON c.id = r.cliente_id
+                    JOIN 
+                        Servicios s ON s.id = r.servicio_id
+                    JOIN 
+                        Trabajadores t ON t.id = r.trabajador_id
+                    WHERE 
+                        CONVERT(date, r.fecha) = ?;
+                """
+        # Ejecutar la consulta con la fecha proporcionada como parámetro
+        cursor.execute(query, (fecha,))
+        rows = cursor.fetchall()
+        reservas = []
+        for row in rows:
+            reservas.append({
+                "cliente": row[0],
+                "servicio": row[1],
+                "trabajador": row[2],
+                "fecha": row[3]
+            })
+        return reservas  
+    except pyodbc.Error as ex:
+        print(f"Error al obtener las reservas por fecha: {ex}")
+        return {"error": "No se pudieron obtener las reservas para la fecha especificada."}
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 #traer reserva segun la id del cliente
 def get_reservas_by_cliente(cliente_id: int):

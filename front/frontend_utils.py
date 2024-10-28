@@ -2,6 +2,14 @@ import os
 from PIL import Image, ImageTk
 import subprocess
 
+"""​​Che siguiendo con mi pregunta de Chaqueño, 
+obviamente voy a intentar 
+improve my inglsh, pero para subir a SemiSR, que considerarias 
+que debe saber alguien? para hacerlo con freelance o proyectos propios"""
+"""Che continuando con mi pregunta de Junior Chaqueño, 
+que consideras que deberia de aprender en base a 
+proyectos propios para considerarme SemiSenior? I
+ntentare Improve mi englis"""
 # Función para cargar imágenes de manera segura
 def load_image(image_filename):
     base_dir = os.path.dirname(os.path.abspath(__file__))

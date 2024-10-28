@@ -8,7 +8,7 @@ class Requests:
     @router.post("/clients/", response_model=dict)
     def create_client(cliente: Cliente):
         return create_client(cliente)
-    @router.get("/clients/")
+    @router.get("/clientsg/")
     def get_clients():
         return get_clients()
     @router.get("/clients/{cliente_id}")
@@ -25,3 +25,7 @@ class Requests:
     @router.get("/clients/login/{email}/{password}")
     def authenticate_client(email:str,password:str):
         return authenticate_client(email,password)
+    
+    @router.get("/clients/email/{email}")
+    def clienteXMail(email:str):
+        return get_cliente_by_email(email)

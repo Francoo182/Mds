@@ -3,6 +3,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
+from fastapi import HTTPException
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from datetime import datetime
@@ -10,7 +11,7 @@ import uvicorn
 
 # Función para generar factura en PDF usando ReportLab
 def generar_factura_pdf(cliente, pago, reserva, servicio):
-    nombre_archivo = f"factura_{cliente['nombre']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    nombre_archivo = f"factura_{cliente['nombre']}_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf"
     c = canvas.Canvas(nombre_archivo, pagesize=letter)
     width, height = letter
 
@@ -46,10 +47,7 @@ def generar_factura_pdf(cliente, pago, reserva, servicio):
 
     return nombre_archivo
 
-# Función para enviar factura por email
-def enviar_factura_por_email(cliente_email, archivo_factura):
-    from_email = "tu_correo@example.com"
-    from_password = "tu_contraseña"
+def enviar_factura_por_email(cliente_email, archivo_factura, from_email, from_password):
     to_email = cliente_email
 
     # Crear el mensaje
@@ -72,11 +70,14 @@ def enviar_factura_por_email(cliente_email, archivo_factura):
 
     # Enviar el correo
     try:
+        # Configuración para Gmail SMTP
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
-        server.login(from_email, from_password)
+        server.login(from_email, from_password)  # Usa la contraseña de aplicación aquí
         server.sendmail(from_email, to_email, msg.as_string())
         server.quit()
-        print("Correo enviado con éxito")
+        print("Correo enviado con éxito a través de Gmail")
+
     except Exception as e:
         print(f"Error al enviar el correo: {e}")
+        raise HTTPException(status_code=500, detail=f"Error en el envío de correo: {e}")

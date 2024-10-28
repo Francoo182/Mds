@@ -53,3 +53,7 @@ class Trabajador(BaseModel):
 class Cliente(Trabajador):
     """Clase cliente"""
     telefono: str
+
+class EmailCredentials(BaseModel):
+    from_email: str
+    from_password: str
